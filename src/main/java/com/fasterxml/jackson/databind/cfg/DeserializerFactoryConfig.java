@@ -1,6 +1,5 @@
 package com.fasterxml.jackson.databind.cfg;
 
-import com.fasterxml.jackson.databind.AbstractTypeResolver;
 import com.fasterxml.jackson.databind.deser.*;
 import com.fasterxml.jackson.databind.deser.std.StdKeyDeserializers;
 import com.fasterxml.jackson.databind.util.ArrayBuilders;
@@ -16,7 +15,6 @@ public class DeserializerFactoryConfig
 
     protected final static Deserializers[] NO_DESERIALIZERS = new Deserializers[0];
     protected final static BeanDeserializerModifier[] NO_MODIFIERS = new BeanDeserializerModifier[0];
-    protected final static AbstractTypeResolver[] NO_ABSTRACT_TYPE_RESOLVERS = new AbstractTypeResolver[0];
     protected final static ValueInstantiators[] NO_VALUE_INSTANTIATORS = new ValueInstantiators[0];
 
     /**
@@ -46,13 +44,6 @@ public class DeserializerFactoryConfig
     protected final BeanDeserializerModifier[] _modifiers;
 
     /**
-     * List of objects that may be able to resolve abstract types to
-     * concrete types. Used by functionality like "mr Bean" to materialize
-     * types as needed.
-     */
-    protected final AbstractTypeResolver[] _abstractTypeResolvers;
-
-    /**
      * List of objects that know how to create instances of POJO types;
      * possibly using custom construction (non-annoted constructors; factory
      * methods external to value type etc).
@@ -66,7 +57,7 @@ public class DeserializerFactoryConfig
      * handlers.
      */
     public DeserializerFactoryConfig() {
-        this(null, null, null, null, null);
+        this(null, null, null, null);
     }
 
     /**
@@ -76,7 +67,6 @@ public class DeserializerFactoryConfig
     protected DeserializerFactoryConfig(Deserializers[] allAdditionalDeserializers,
             KeyDeserializers[] allAdditionalKeyDeserializers,
             BeanDeserializerModifier[] modifiers,
-            AbstractTypeResolver[] atr,
             ValueInstantiators[] vi)
     {
         _additionalDeserializers = (allAdditionalDeserializers == null) ?
@@ -84,7 +74,6 @@ public class DeserializerFactoryConfig
         _additionalKeyDeserializers = (allAdditionalKeyDeserializers == null) ?
                 DEFAULT_KEY_DESERIALIZERS : allAdditionalKeyDeserializers;
         _modifiers = (modifiers == null) ? NO_MODIFIERS : modifiers;
-        _abstractTypeResolvers = (atr == null) ? NO_ABSTRACT_TYPE_RESOLVERS : atr;
         _valueInstantiators = (vi == null) ? NO_VALUE_INSTANTIATORS : vi;
     }
 
@@ -101,7 +90,7 @@ public class DeserializerFactoryConfig
         }
         Deserializers[] all = ArrayBuilders.insertInListNoDup(_additionalDeserializers, additional);
         return new DeserializerFactoryConfig(all, _additionalKeyDeserializers, _modifiers,
-                _abstractTypeResolvers, _valueInstantiators);
+                _valueInstantiators);
     }
 
     /**
@@ -117,7 +106,7 @@ public class DeserializerFactoryConfig
         }
         KeyDeserializers[] all = ArrayBuilders.insertInListNoDup(_additionalKeyDeserializers, additional);
         return new DeserializerFactoryConfig(_additionalDeserializers, all, _modifiers,
-                _abstractTypeResolvers, _valueInstantiators);
+                _valueInstantiators);
     }
 
     /**
@@ -132,24 +121,7 @@ public class DeserializerFactoryConfig
             throw new IllegalArgumentException("Cannot pass null modifier");
         }
         BeanDeserializerModifier[] all = ArrayBuilders.insertInListNoDup(_modifiers, modifier);
-        return new DeserializerFactoryConfig(_additionalDeserializers, _additionalKeyDeserializers, all,
-                _abstractTypeResolvers, _valueInstantiators);
-    }
-
-    /**
-     * Fluent/factory method used to construct a configuration object that
-     * has same configuration as this instance plus one additional
-     * abstract type resolver.
-     * Added resolver has the highest priority (that is, it
-     * gets called before any already registered resolver).
-     */
-    public DeserializerFactoryConfig withAbstractTypeResolver(AbstractTypeResolver resolver)
-    {
-        if (resolver == null) {
-            throw new IllegalArgumentException("Cannot pass null resolver");
-        }
-        AbstractTypeResolver[] all = ArrayBuilders.insertInListNoDup(_abstractTypeResolvers, resolver);
-        return new DeserializerFactoryConfig(_additionalDeserializers, _additionalKeyDeserializers, _modifiers,
+        return new DeserializerFactoryConfig(_additionalDeserializers, _additionalKeyDeserializers,
                 all, _valueInstantiators);
     }
 
@@ -169,8 +141,8 @@ public class DeserializerFactoryConfig
             throw new IllegalArgumentException("Cannot pass null resolver");
         }
         ValueInstantiators[] all = ArrayBuilders.insertInListNoDup(_valueInstantiators, instantiators);
-        return new DeserializerFactoryConfig(_additionalDeserializers, _additionalKeyDeserializers, _modifiers,
-                _abstractTypeResolvers, all);
+        return new DeserializerFactoryConfig(_additionalDeserializers, _additionalKeyDeserializers,
+                _modifiers, all);
     }
     
     public boolean hasDeserializers() { return _additionalDeserializers.length > 0; }
@@ -178,8 +150,6 @@ public class DeserializerFactoryConfig
     public boolean hasKeyDeserializers() { return _additionalKeyDeserializers.length > 0; }
     
     public boolean hasDeserializerModifiers() { return _modifiers.length > 0; }
-
-    public boolean hasAbstractTypeResolvers() { return _abstractTypeResolvers.length > 0; }
 
     public boolean hasValueInstantiators() { return _valueInstantiators.length > 0; }
     
@@ -193,10 +163,6 @@ public class DeserializerFactoryConfig
     
     public Iterable<BeanDeserializerModifier> deserializerModifiers() {
         return new ArrayIterator<BeanDeserializerModifier>(_modifiers);
-    }
-
-    public Iterable<AbstractTypeResolver> abstractTypeResolvers() {
-        return new ArrayIterator<AbstractTypeResolver>(_abstractTypeResolvers);
     }
 
     public Iterable<ValueInstantiators> valueInstantiators() {

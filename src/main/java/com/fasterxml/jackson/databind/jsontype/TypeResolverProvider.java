@@ -62,13 +62,8 @@ public class TypeResolverProvider
         return b.buildTypeSerializer(config, baseType, subtypes);
     }
 
-    /**
-     * @param abstractDefaultMapper (optional) If caller can provide mapping for abstract base type to
-     *    concrete, this is the accessor to call with base type
-     */
     public TypeDeserializer findTypeDeserializer(DeserializationConfig config,
-            AnnotatedClass classInfo, JavaType baseType,
-            UnaryOperator<JavaType> abstractDefaultMapper)
+            AnnotatedClass classInfo, JavaType baseType)
         throws JsonMappingException
     {
         final AnnotationIntrospector ai = config.getAnnotationIntrospector();
@@ -89,11 +84,8 @@ public class TypeResolverProvider
         }
         // May need to figure out default implementation, if none found yet
         // (note: check for abstract type is not 100% mandatory, more of an optimization)
-        if ((abstractDefaultMapper != null)
-                && (b.getDefaultImpl() == null) && baseType.isAbstract()) {
-//            JavaType defaultType = mapAbstractType(config, baseType);
-            JavaType defaultType = abstractDefaultMapper.apply(baseType);
-
+        if ((b.getDefaultImpl() == null) && baseType.isAbstract()) {
+            JavaType defaultType = config.mapAbstractType(baseType);
             if ((defaultType != null) && !defaultType.hasRawClass(baseType.getRawClass())) {
                 b = b.defaultImpl(defaultType.getRawClass());
             }
