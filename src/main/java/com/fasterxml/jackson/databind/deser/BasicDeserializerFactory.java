@@ -188,8 +188,11 @@ public abstract class BasicDeserializerFactory
      */
 
     @Override
-    public JavaType mapAbstractType(DeserializationConfig config, JavaType type) throws JsonMappingException
+    public JavaType mapAbstractType(DeserializationConfig config, JavaType type)
     {
+        if (!_factoryConfig.hasAbstractTypeResolvers()) {
+            return type;
+        }
         // first, general mappings
         while (true) {
             JavaType next = _mapAbstractType2(config, type);
@@ -212,15 +215,12 @@ public abstract class BasicDeserializerFactory
      * lookup through registered abstract type resolvers; will not do recursive lookups.
      */
     private JavaType _mapAbstractType2(DeserializationConfig config, JavaType type)
-        throws JsonMappingException
     {
         Class<?> currClass = type.getRawClass();
-        if (_factoryConfig.hasAbstractTypeResolvers()) {
-            for (AbstractTypeResolver resolver : _factoryConfig.abstractTypeResolvers()) {
-                JavaType concrete = resolver.findTypeMapping(config, type);
-                if (ClassUtil.rawClass(concrete) != currClass) {
-                    return concrete;
-                }
+        for (AbstractTypeResolver resolver : _factoryConfig.abstractTypeResolvers()) {
+            JavaType concrete = resolver.findTypeMapping(config, type);
+            if (ClassUtil.rawClass(concrete) != currClass) {
+                return concrete;
             }
         }
         return null;
@@ -1604,19 +1604,27 @@ nonAnnotatedParamIndex, ctor);
      */
 
     @Override
-    public TypeDeserializer findTypeDeserializer(DeserializationConfig config,
+    public TypeDeserializer findTypeDeserializer(final DeserializationConfig config,
             JavaType baseType)
         throws JsonMappingException
     {
+        BeanDescription bean = config.introspectClassAnnotations(baseType.getRawClass());
+        return config.getTypeResolverProvider().findTypeDeserializer(config,
+                bean.getClassInfo(), baseType,
+                b ->  mapAbstractType(config, b)
+        );
+
+//      JavaType defaultType = mapAbstractType(config, baseType);
+        
+        /*
         BeanDescription bean = config.introspectClassAnnotations(baseType.getRawClass());
         AnnotatedClass ac = bean.getClassInfo();
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findTypeResolver(config,
                 ac, baseType, ai.findPolymorphicTypeInfo(config, ac));
 
-        /* Ok: if there is no explicit type info handler, we may want to
-         * use a default. If so, config object knows what to use.
-         */
+        // Ok: if there is no explicit type info handler, we may want to
+        // use a default. If so, config object knows what to use.
         Collection<NamedType> subtypes = null;
         if (b == null) {
             b = config.getDefaultTyper(baseType);
@@ -1635,6 +1643,7 @@ nonAnnotatedParamIndex, ctor);
             }
         }
         return b.buildTypeDeserializer(config, baseType, subtypes);
+        */
     }
 
     /**

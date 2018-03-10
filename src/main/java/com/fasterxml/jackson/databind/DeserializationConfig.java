@@ -1,7 +1,5 @@
 package com.fasterxml.jackson.databind;
 
-import java.util.*;
-
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.cfg.*;
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
@@ -630,6 +628,12 @@ public final class DeserializationConfig
         throws JsonMappingException
     {
         BeanDescription bean = introspectClassAnnotations(baseType.getRawClass());
+        return getTypeResolverProvider().findTypeDeserializer(this,
+                bean.getClassInfo(), baseType,
+                null // no access to abstract type mappings from here...
+                );
+        /*
+        BeanDescription bean = introspectClassAnnotations(baseType.getRawClass());
         AnnotatedClass ac = bean.getClassInfo();
         AnnotationIntrospector ai = getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findTypeResolver(this, ac, baseType,
@@ -647,5 +651,6 @@ public final class DeserializationConfig
             subtypes = getSubtypeResolver().collectAndResolveSubtypesByTypeId(this, ac);
         }
         return b.buildTypeDeserializer(this, baseType, subtypes);
+        */
     }
 }

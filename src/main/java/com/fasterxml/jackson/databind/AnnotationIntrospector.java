@@ -298,8 +298,21 @@ public abstract class AnnotationIntrospector
      *
      * @since 3.0
      */
-    public JsonTypeInfo.Value findPolymorphicTypeInfo(MapperConfig<?> config,
-            Annotated ann) {
+    public JsonTypeInfo.Value findPolymorphicTypeInfo(MapperConfig<?> config, Annotated ann) {
+        return null;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public Object findTypeResolverBuilder(MapperConfig<?> config, Annotated ann) {
+        return null;
+    }
+
+    /**
+     * @since 3.0
+     */
+    public Object findTypeIdResolver(MapperConfig<?> config, Annotated ann) {
         return null;
     }
 
@@ -316,10 +329,12 @@ public abstract class AnnotationIntrospector
      * 
      * @return Type resolver builder for given type, if one found; null if none
      */
+    /*
     public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
             Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo) {
         return null;
     }
+    */
 
     /**
      * Method for checking if given property entity (field or method) has annotations

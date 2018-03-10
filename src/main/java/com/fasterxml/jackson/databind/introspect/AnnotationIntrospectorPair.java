@@ -195,12 +195,20 @@ public class AnnotationIntrospectorPair
     }
 
     @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
-            Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo)
-    {
-        TypeResolverBuilder<?> b = _primary.findTypeResolver(config, ann, baseType, typeInfo);
+    public Object findTypeResolverBuilder(MapperConfig<?> config,
+            Annotated ann) {
+        Object b = _primary.findTypeResolverBuilder(config, ann);
         if (b == null) {
-            b = _secondary.findTypeResolver(config, ann, baseType, typeInfo);
+            b = _secondary.findTypeResolverBuilder(config, ann);
+        }
+        return b;
+    }
+
+    @Override
+    public Object findTypeIdResolver(MapperConfig<?> config, Annotated ann) {
+        Object b = _primary.findTypeIdResolver(config, ann);
+        if (b == null) {
+            b = _secondary.findTypeIdResolver(config, ann);
         }
         return b;
     }

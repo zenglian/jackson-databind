@@ -515,15 +515,20 @@ public class JacksonAnnotationIntrospector
             Annotated ann)
     {
         JsonTypeInfo t = _findAnnotation(ann, JsonTypeInfo.class);
-        // will accept `null`, return `null`
-        return JsonTypeInfo.Value.from(t);
+        return (t == null) ? null : JsonTypeInfo.Value.from(t);
     }
-    
+
     @Override
-    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config,
-            Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo)
-    {
-        return _findTypeResolver(config, ann, baseType, typeInfo);
+    public Object findTypeResolverBuilder(MapperConfig<?> config,
+            Annotated ann) {
+        JsonTypeResolver a = _findAnnotation(ann, JsonTypeResolver.class);
+        return (a == null) ? a : a.value();
+    }
+
+    @Override
+    public Object findTypeIdResolver(MapperConfig<?> config, Annotated ann) {
+        JsonTypeIdResolver a = _findAnnotation(ann, JsonTypeIdResolver.class);
+        return (a == null) ? a : a.value();
     }
 
     @Override

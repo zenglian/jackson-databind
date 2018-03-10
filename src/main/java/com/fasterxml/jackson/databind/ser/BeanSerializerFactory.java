@@ -300,7 +300,7 @@ public class BeanSerializerFactory
 
         // Defaulting: if no annotations on member, check value class
         if (b == null) {
-            typeSer = createTypeSerializer(config, baseType);
+            typeSer = findTypeSerializer(config, baseType);
         } else {
             Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByClass(
                     config, accessor, baseType);
@@ -331,7 +331,7 @@ public class BeanSerializerFactory
 
         // Defaulting: if no annotations on member, check value class
         if (b == null) {
-            typeSer = createTypeSerializer(config, contentType);
+            typeSer = findTypeSerializer(config, contentType);
         } else {
             Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByClass(config,
                     accessor, contentType);
@@ -348,8 +348,6 @@ public class BeanSerializerFactory
 
     /**
      * Method called to construct serializer for serializing specified bean type.
-     * 
-     * @since 2.1
      */
     @SuppressWarnings("unchecked")
     protected JsonSerializer<Object> constructBeanSerializer(SerializerProvider prov,
@@ -408,7 +406,7 @@ public class BeanSerializerFactory
             // copied from BasicSerializerFactory.buildMapSerializer():
             boolean staticTyping = config.isEnabled(MapperFeature.USE_STATIC_TYPING);
             JavaType valueType = type.getContentType();
-            TypeSerializer typeSer = createTypeSerializer(config, valueType);
+            TypeSerializer typeSer = findTypeSerializer(config, valueType);
             // last 2 nulls; don't know key, value serializers (yet)
             // 23-Feb-2015, tatu: As per [databind#705], need to support custom serializers
             JsonSerializer<?> anySer = findSerializerFromAnnotation(prov, anyGetter);

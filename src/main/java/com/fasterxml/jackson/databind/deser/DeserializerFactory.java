@@ -90,8 +90,7 @@ public abstract class DeserializerFactory
      * something "more concrete" (abstract class instead of interface).
      * Will either return passed type, or a more specific type.
      */
-    public abstract JavaType mapAbstractType(DeserializationConfig config, JavaType type)
-        throws JsonMappingException;
+    public abstract JavaType mapAbstractType(DeserializationConfig config, JavaType type);
 
     /**
      * Method that is to find all creators (constructors, factory methods)

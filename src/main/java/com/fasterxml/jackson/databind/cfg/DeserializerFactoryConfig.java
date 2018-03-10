@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.util.ArrayIterator;
  * Configuration settings container class for {@link DeserializerFactory}.
  */
 public class DeserializerFactoryConfig
-    implements java.io.Serializable // since 2.1
+    implements java.io.Serializable
 {
-    private static final long serialVersionUID = 1L; // since 2.5
+    private static final long serialVersionUID = 3L;
 
     protected final static Deserializers[] NO_DESERIALIZERS = new Deserializers[0];
     protected final static BeanDeserializerModifier[] NO_MODIFIERS = new BeanDeserializerModifier[0];
@@ -22,8 +22,6 @@ public class DeserializerFactoryConfig
     /**
      * By default we plug default key deserializers using as "just another" set of
      * of key deserializers.
-     * 
-     * @since 2.2
      */
     protected final static KeyDeserializers[] DEFAULT_KEY_DESERIALIZERS = new KeyDeserializers[] {
         new StdKeyDeserializers()
