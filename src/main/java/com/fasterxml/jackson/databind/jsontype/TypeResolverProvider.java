@@ -1,7 +1,6 @@
 package com.fasterxml.jackson.databind.jsontype;
 
 import java.util.Collection;
-import java.util.function.UnaryOperator;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -14,7 +13,10 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 
 /**
  * Abstraction used for allowing construction and registration of custom
- * {@link TypeResolverBuilder}s.
+ * {@link TypeResolverBuilder}s, used in turn for actual construction of
+ * {@link com.fasterxml.jackson.databind.jsontype.TypeSerializer}s
+ * and {@link com.fasterxml.jackson.databind.jsontype.TypeDeserializer}s
+ * for Polymorphic type handling.
  * At this point contains both API and default implementation.
  *
  * @since 3.0
@@ -26,6 +28,7 @@ public class TypeResolverProvider
     /* Public API
     /**********************************************************************
      */
+
     /**
      * Method for checking if given class has annotations that indicate
      * that specific type resolver is to be used for handling instances.

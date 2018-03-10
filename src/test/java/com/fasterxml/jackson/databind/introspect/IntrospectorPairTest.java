@@ -180,13 +180,13 @@ public class IntrospectorPairTest extends BaseMapTest
         
         @SuppressWarnings("unchecked")
         @Override
-        public List<NamedType> findSubtypes(Annotated a)
+        public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)
         {
             return (List<NamedType>) values.get("findSubtypes");
         }
 
         @Override
-        public String findTypeName(AnnotatedClass ac) {
+        public String findTypeName(MapperConfig<?> config, AnnotatedClass ac) {
             return (String) values.get("findTypeName");
         }
 
@@ -443,11 +443,11 @@ public class IntrospectorPairTest extends BaseMapTest
                 .add("findTypeName", "type1");
         IntrospectorWithMap intr2 = new IntrospectorWithMap()
                 .add("findTypeName", "type2");
-        assertNull(new AnnotationIntrospectorPair(NO_ANNOTATIONS, NO_ANNOTATIONS).findTypeName(null));
+        assertNull(new AnnotationIntrospectorPair(NO_ANNOTATIONS, NO_ANNOTATIONS).findTypeName(null, null));
         assertEquals("type1",
-                new AnnotationIntrospectorPair(intr1, intr2).findTypeName(null));
+                new AnnotationIntrospectorPair(intr1, intr2).findTypeName(null, null));
         assertEquals("type2",
-                new AnnotationIntrospectorPair(intr2, intr1).findTypeName(null));
+                new AnnotationIntrospectorPair(intr2, intr1).findTypeName(null, null));
     }
 
     /*

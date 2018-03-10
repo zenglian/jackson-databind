@@ -557,7 +557,7 @@ public class JacksonAnnotationIntrospector
     }
     
     @Override
-    public List<NamedType> findSubtypes(Annotated a)
+    public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)
     {
         JsonSubTypes t = _findAnnotation(a, JsonSubTypes.class);
         if (t == null) return null;
@@ -570,14 +570,14 @@ public class JacksonAnnotationIntrospector
     }
 
     @Override        
-    public String findTypeName(AnnotatedClass ac)
+    public String findTypeName(MapperConfig<?> config, AnnotatedClass ac)
     {
         JsonTypeName tn = _findAnnotation(ac, JsonTypeName.class);
         return (tn == null) ? null : tn.value();
     }
 
     @Override
-    public Boolean isTypeId(AnnotatedMember member) {
+    public Boolean isTypeId(MapperConfig<?> config, AnnotatedMember member) {
         return _hasAnnotation(member, JsonTypeId.class);
     }
 

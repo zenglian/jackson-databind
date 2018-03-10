@@ -684,7 +684,7 @@ public final class DeserializationConfig
     /* Support for polymorphic type handling
     /**********************************************************************
      */
-    
+
     /**
      * Helper method that is needed to properly handle polymorphic referenced
      * types, such as types referenced by {@link java.util.concurrent.atomic.AtomicReference},
@@ -696,25 +696,5 @@ public final class DeserializationConfig
         BeanDescription bean = introspectClassAnnotations(baseType.getRawClass());
         return getTypeResolverProvider().findTypeDeserializer(this,
                 bean.getClassInfo(), baseType);
-        /*
-        BeanDescription bean = introspectClassAnnotations(baseType.getRawClass());
-        AnnotatedClass ac = bean.getClassInfo();
-        AnnotationIntrospector ai = getAnnotationIntrospector();
-        TypeResolverBuilder<?> b = ai.findTypeResolver(this, ac, baseType,
-                ai.findPolymorphicTypeInfo(this, ac));
-
-        // Ok: if there is no explicit type info handler, we may want to
-        // use a default. If so, config object knows what to use.
-        Collection<NamedType> subtypes = null;
-        if (b == null) {
-            b = getDefaultTyper(baseType);
-            if (b == null) {
-                return null;
-            }
-        } else {
-            subtypes = getSubtypeResolver().collectAndResolveSubtypesByTypeId(this, ac);
-        }
-        return b.buildTypeDeserializer(this, baseType, subtypes);
-        */
     }
 }
