@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.introspect.*;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.Converter;
 import com.fasterxml.jackson.databind.util.NameTransformer;
@@ -373,10 +372,12 @@ public abstract class AnnotationIntrospector
      * @return Type resolver builder for values contained in properties of given entity,
      *    if one found; null if none
      */
+    /*
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
             Annotated ann, JavaType containerType, JsonTypeInfo.Value typeInfo) {
         return null;
     }
+    */
 
     /**
      * Method for locating annotation-specified subtypes related to annotated

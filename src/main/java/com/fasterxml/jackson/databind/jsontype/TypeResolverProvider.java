@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
  */
 public class TypeResolverProvider
 {
+    protected final static StdTypeResolverBuilder NO_RESOLVER = StdTypeResolverBuilder.noTypeInfoBuilder();
+
     /*
     /**********************************************************************
     /* Public API, for class
@@ -32,13 +34,14 @@ public class TypeResolverProvider
 
     /**
      * Method for checking if given class has annotations that indicate
-     * that specific type resolver is to be used for handling instances.
+     * that specific type resolver is to be used for handling instances of given type.
      * This includes not only
      * instantiating resolver builder, but also configuring it based on
      * relevant annotations (not including ones checked with a call to
      * {@link #findSubtypes}
      *
      * @param config Configuration settings in effect (for serialization or deserialization)
+     * @param classInfo Introspected annotation information for the class (type)
      * @param baseType Base java type of value for which resolver is to be found
      * 
      * @return Type resolver builder for given type, if one found; null if none
@@ -47,9 +50,7 @@ public class TypeResolverProvider
             AnnotatedClass classInfo, JavaType baseType)
         throws JsonMappingException
     {
-        final AnnotationIntrospector ai = config.getAnnotationIntrospector();
-        JsonTypeInfo.Value typeInfo = ai.findPolymorphicTypeInfo(config, classInfo);
-        TypeResolverBuilder<?> b = _findTypeResolver(config, classInfo, baseType, typeInfo);
+        TypeResolverBuilder<?> b = _findTypeResolver(config, classInfo, baseType);
         // Ok: if there is no explicit type info handler, we may want to
         // use a default. If so, config object knows what to use.
         Collection<NamedType> subtypes = null;
@@ -70,10 +71,7 @@ public class TypeResolverProvider
             AnnotatedClass classInfo, JavaType baseType)
         throws JsonMappingException
     {
-        final AnnotationIntrospector ai = config.getAnnotationIntrospector();
-        JsonTypeInfo.Value typeInfo = ai.findPolymorphicTypeInfo(config, classInfo);
-        TypeResolverBuilder<?> b = _findTypeResolver(config,
-                classInfo, baseType, typeInfo);
+        TypeResolverBuilder<?> b = _findTypeResolver(config, classInfo, baseType);
 
         // Ok: if there is no explicit type info handler, we may want to
         // use a default. If so, config object knows what to use.
@@ -110,8 +108,7 @@ public class TypeResolverProvider
         TypeResolverBuilder<?> b = null;
         // As per definition of @JsonTypeInfo, check for annotation only for non-container types
         if (!baseType.isContainerType() && !baseType.isReferenceType()) {
-            b = _findTypeResolver(config, accessor, baseType,
-                    config.getAnnotationIntrospector().findPolymorphicTypeInfo(config, accessor));
+            b = _findTypeResolver(config, accessor, baseType);
         }
         // No annotation on property? Then base it on actual type (and further, default typing if need be)
         if (b == null) {
@@ -132,8 +129,7 @@ public class TypeResolverProvider
         TypeResolverBuilder<?> b = null;
         // As per definition of @JsonTypeInfo, check for annotation only for non-container types
         if (!baseType.isContainerType() && !baseType.isReferenceType()) {
-            b = _findTypeResolver(config, accessor, baseType,
-                    config.getAnnotationIntrospector().findPolymorphicTypeInfo(config, accessor));
+            b = _findTypeResolver(config, accessor, baseType);
         }
         // No annotation on property? Then base it on actual type (and further, default typing if need be)
         if (b == null) {
@@ -153,7 +149,57 @@ public class TypeResolverProvider
         }
         return b.buildTypeDeserializer(config, baseType, subtypes);
     }
-    
+
+    public TypeSerializer findPropertyContentTypeSerializer(SerializationConfig config,
+            AnnotatedMember accessor, JavaType containerType)
+        throws JsonMappingException
+    {
+        final JavaType contentType = containerType.getContentType();
+        // First: let's ensure property is a container type: caller should have
+        // verified but just to be sure
+        if (contentType == null) {
+            throw new IllegalArgumentException("Must call method with a container or reference type (got "+containerType+")");
+        }
+        TypeResolverBuilder<?> b = _findTypeResolver(config, accessor, containerType);
+        // No annotation on property? Then base it on actual type (and further, default typing if need be)
+        if (b == null) {
+            BeanDescription bean = config.introspectClassAnnotations(contentType.getRawClass());
+            return findTypeSerializer(config, bean.getClassInfo(), contentType);
+        }
+        Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByClass(
+                config, accessor, contentType);
+        return b.buildTypeSerializer(config, contentType, subtypes);
+    }
+
+    public TypeDeserializer findPropertyContentTypeDeserializer(DeserializationConfig config,
+            AnnotatedMember accessor, JavaType containerType)
+        throws JsonMappingException
+    {
+        final JavaType contentType = containerType.getContentType();
+        // First: let's ensure property is a container type: caller should have
+        // verified but just to be sure
+        if (contentType == null) {
+            throw new IllegalArgumentException("Must call method with a container or reference type (got "+containerType+")");
+        }
+        TypeResolverBuilder<?> b = _findTypeResolver(config, accessor, containerType);
+        if (b == null) {
+            return findTypeDeserializer(config,
+                    config.introspectClassAnnotations(contentType.getRawClass()).getClassInfo(),
+                    contentType);
+        }
+        Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(config,
+                accessor, contentType);
+        // May need to figure out default implementation, if none found yet
+        // (note: check for abstract type is not 100% mandatory, more of an optimization)
+        if ((b.getDefaultImpl() == null) && contentType.isAbstract()) {
+            JavaType defaultType = config.mapAbstractType(contentType);
+            if ((defaultType != null) && !defaultType.hasRawClass(contentType.getRawClass())) {
+                b = b.defaultImpl(defaultType.getRawClass());
+            }
+        }
+        return b.buildTypeDeserializer(config, contentType, subtypes);
+    }
+
     /*
     /**********************************************************************
     /* Helper methods
@@ -161,9 +207,11 @@ public class TypeResolverProvider
      */
 
     protected TypeResolverBuilder<?> _findTypeResolver(MapperConfig<?> config,
-            Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo)
+            Annotated ann, JavaType baseType)
     {
         final AnnotationIntrospector ai = config.getAnnotationIntrospector();
+        JsonTypeInfo.Value typeInfo = ai.findPolymorphicTypeInfo(config, ann);
+
         // First: maybe we have explicit type resolver?
         TypeResolverBuilder<?> b;
         Object customResolverOb = ai.findTypeResolverBuilder(config, ann);
@@ -185,7 +233,7 @@ public class TypeResolverProvider
             }
             // bit special; must return 'marker' to block use of default typing:
             if (typeInfo.getIdType() == JsonTypeInfo.Id.NONE) {
-                return _constructNoTypeResolverBuilder();
+                return NO_RESOLVER;
             }
             // 13-Aug-2011, tatu: One complication; external id
             //   only works for properties; so if declared for a Class, we will need
@@ -216,13 +264,5 @@ public class TypeResolverProvider
 
     protected StdTypeResolverBuilder _constructStdTypeResolverBuilder(JsonTypeInfo.Value typeInfo) {
         return new StdTypeResolverBuilder(typeInfo);
-    }
-
-    /**
-     * Helper method for dealing with "no type info" marker; can't be null
-     * (as it'd be replaced by default typing)
-     */
-    protected StdTypeResolverBuilder _constructNoTypeResolverBuilder() {
-        return StdTypeResolverBuilder.noTypeInfoBuilder();
     }
 }

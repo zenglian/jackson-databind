@@ -5,7 +5,6 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.Version;
 
 import com.fasterxml.jackson.databind.*;
@@ -13,7 +12,6 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
 import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 
@@ -164,13 +162,6 @@ public class IntrospectorPairTest extends BaseMapTest
         /******************************************************
          */
 
-        @Override
-        public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
-                Annotated am, JavaType baseType, JsonTypeInfo.Value typeInfo)
-        {
-            return (TypeResolverBuilder<?>) values.get("findPropertyContentTypeResolver");
-        }
-        
         @SuppressWarnings("unchecked")
         @Override
         public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)

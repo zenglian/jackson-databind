@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.NameTransformer;
@@ -219,7 +218,6 @@ public class AnnotationIntrospectorPair
         }
         return b;
     }
-    */
 
     @Override
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
@@ -231,6 +229,7 @@ public class AnnotationIntrospectorPair
         }
         return b;
     }
+    */
     
     @Override
     public List<NamedType> findSubtypes(MapperConfig<?> config, Annotated a)

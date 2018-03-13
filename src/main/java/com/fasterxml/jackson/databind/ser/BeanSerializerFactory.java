@@ -10,8 +10,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.SerializerFactoryConfig;
 import com.fasterxml.jackson.databind.introspect.*;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.impl.FilteredBeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.impl.ObjectIdWriter;
@@ -326,13 +324,15 @@ public class BeanSerializerFactory
             SerializationConfig config, AnnotatedMember accessor)
         throws JsonMappingException
     {
-        JavaType contentType = containerType.getContentType();
+        return config.getTypeResolverProvider().findPropertyContentTypeSerializer(config, accessor, containerType);
+        /*
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findPropertyContentTypeResolver(config,
                 accessor, containerType, ai.findPolymorphicTypeInfo(config, accessor));
         TypeSerializer typeSer;
 
         // Defaulting: if no annotations on member, check value class
+        JavaType contentType = containerType.getContentType();
         if (b == null) {
             typeSer = findTypeSerializer(config, contentType);
         } else {
@@ -341,6 +341,7 @@ public class BeanSerializerFactory
             typeSer = b.buildTypeSerializer(config, contentType, subtypes);
         }
         return typeSer;
+        */
     }
 
     /*

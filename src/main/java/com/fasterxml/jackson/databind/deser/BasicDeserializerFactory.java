@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
 import com.fasterxml.jackson.core.JsonLocation;
+
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.DeserializerFactoryConfig;
 import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
@@ -22,9 +24,7 @@ import com.fasterxml.jackson.databind.ext.jdk8.OptionalDoubleDeserializer;
 import com.fasterxml.jackson.databind.ext.jdk8.OptionalIntDeserializer;
 import com.fasterxml.jackson.databind.ext.jdk8.OptionalLongDeserializer;
 import com.fasterxml.jackson.databind.introspect.*;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.type.*;
 import com.fasterxml.jackson.databind.util.*;
 
@@ -1741,16 +1741,18 @@ nonAnnotatedParamIndex, ctor);
      * and not for values in container types or root values (or non-container properties)
      * 
      * @param containerType Type of property; must be a container type
-     * @param propertyEntity Field or method that contains container property
+     * @param accessor Field or method that contains container property
      */    
     public TypeDeserializer findPropertyContentTypeDeserializer(DeserializationConfig config,
-            JavaType containerType, AnnotatedMember propertyEntity)
+            JavaType containerType, AnnotatedMember accessor)
         throws JsonMappingException
     {
+        return config.getTypeResolverProvider().findPropertyContentTypeDeserializer(config, accessor, containerType);
+/*
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findPropertyContentTypeResolver(config,
-                propertyEntity, containerType,
-                ai.findPolymorphicTypeInfo(config, propertyEntity));
+                accessor, containerType,
+                ai.findPolymorphicTypeInfo(config, accessor));
         JavaType contentType = containerType.getContentType();
         // Defaulting: if no annotations on member, check class
         if (b == null) {
@@ -1758,8 +1760,9 @@ nonAnnotatedParamIndex, ctor);
         }
         // but if annotations found, may need to resolve subtypes:
         Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(
-                config, propertyEntity, contentType);
+                config, accessor, contentType);
         return b.buildTypeDeserializer(config, contentType, subtypes);
+        */
     }
 
     /**
