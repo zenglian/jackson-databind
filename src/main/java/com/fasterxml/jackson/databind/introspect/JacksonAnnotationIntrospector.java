@@ -531,6 +531,7 @@ public class JacksonAnnotationIntrospector
         return (a == null) ? a : a.value();
     }
 
+    /*
     @Override
     public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config,
             Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo)
@@ -543,6 +544,7 @@ public class JacksonAnnotationIntrospector
         // No per-member type overrides (yet)
         return _findTypeResolver(config, ann, baseType, typeInfo);
     }
+    */
 
     @Override
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,

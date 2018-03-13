@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 
 /**
@@ -25,7 +26,7 @@ public class TypeResolverProvider
 {
     /*
     /**********************************************************************
-    /* Public API
+    /* Public API, for class
     /**********************************************************************
      */
 
@@ -95,6 +96,63 @@ public class TypeResolverProvider
         }
         return b.buildTypeDeserializer(config, baseType, subtypes);
     }
+
+    /*
+    /**********************************************************************
+    /* Public API, for property
+    /**********************************************************************
+     */
+
+    public TypeSerializer findPropertyTypeSerializer(SerializationConfig config,
+            AnnotatedMember accessor, JavaType baseType)
+        throws JsonMappingException
+    {
+        TypeResolverBuilder<?> b = null;
+        // As per definition of @JsonTypeInfo, check for annotation only for non-container types
+        if (!baseType.isContainerType() && !baseType.isReferenceType()) {
+            b = _findTypeResolver(config, accessor, baseType,
+                    config.getAnnotationIntrospector().findPolymorphicTypeInfo(config, accessor));
+        }
+        // No annotation on property? Then base it on actual type (and further, default typing if need be)
+        if (b == null) {
+            BeanDescription bean = config.introspectClassAnnotations(baseType.getRawClass());
+            return findTypeSerializer(config, bean.getClassInfo(), baseType);
+        }
+        Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByClass(
+                config, accessor, baseType);
+        // 10-Jun-2015, tatu: Since not created for Bean Property, no need for post-processing
+        //    wrt EXTERNAL_PROPERTY
+        return b.buildTypeSerializer(config, baseType, subtypes);
+    }
+
+    public TypeDeserializer findPropertyTypeDeserializer(DeserializationConfig config,
+            AnnotatedMember accessor, JavaType baseType)
+        throws JsonMappingException
+    {
+        TypeResolverBuilder<?> b = null;
+        // As per definition of @JsonTypeInfo, check for annotation only for non-container types
+        if (!baseType.isContainerType() && !baseType.isReferenceType()) {
+            b = _findTypeResolver(config, accessor, baseType,
+                    config.getAnnotationIntrospector().findPolymorphicTypeInfo(config, accessor));
+        }
+        // No annotation on property? Then base it on actual type (and further, default typing if need be)
+        if (b == null) {
+            return findTypeDeserializer(config,
+                    config.introspectClassAnnotations(baseType.getRawClass()).getClassInfo(),
+                    baseType);
+        }
+        Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(config,
+                    accessor, baseType);
+        // May need to figure out default implementation, if none found yet
+        // (note: check for abstract type is not 100% mandatory, more of an optimization)
+        if ((b.getDefaultImpl() == null) && baseType.isAbstract()) {
+            JavaType defaultType = config.mapAbstractType(baseType);
+            if ((defaultType != null) && !defaultType.hasRawClass(baseType.getRawClass())) {
+                b = b.defaultImpl(defaultType.getRawClass());
+            }
+        }
+        return b.buildTypeDeserializer(config, baseType, subtypes);
+    }
     
     /*
     /**********************************************************************
@@ -132,9 +190,11 @@ public class TypeResolverProvider
             // 13-Aug-2011, tatu: One complication; external id
             //   only works for properties; so if declared for a Class, we will need
             //   to map it to "PROPERTY" instead of "EXTERNAL_PROPERTY"
-            JsonTypeInfo.As inclusion = typeInfo.getInclusionType();
-            if (inclusion == JsonTypeInfo.As.EXTERNAL_PROPERTY && (ann instanceof AnnotatedClass)) {
-                typeInfo = typeInfo.withInclusionType(JsonTypeInfo.As.PROPERTY);
+            if (ann instanceof AnnotatedClass) {
+                JsonTypeInfo.As inclusion = typeInfo.getInclusionType();
+                if (inclusion == JsonTypeInfo.As.EXTERNAL_PROPERTY && (ann instanceof AnnotatedClass)) {
+                    typeInfo = typeInfo.withInclusionType(JsonTypeInfo.As.PROPERTY);
+                }
             }
             b = _constructStdTypeResolverBuilder(typeInfo);
         }

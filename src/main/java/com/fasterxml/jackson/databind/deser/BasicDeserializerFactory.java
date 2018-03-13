@@ -1711,9 +1711,12 @@ nonAnnotatedParamIndex, ctor);
      * @return Type deserializer to use for given base type, if one is needed; null if not.
      */
     public TypeDeserializer findPropertyTypeDeserializer(DeserializationConfig config,
-            JavaType baseType, AnnotatedMember annotated)
+            JavaType baseType, AnnotatedMember accessor)
         throws JsonMappingException
     {
+        return config.getTypeResolverProvider().findPropertyTypeDeserializer(config, accessor, baseType);
+
+        /*
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findPropertyTypeResolver(config,
                 annotated, baseType,
@@ -1726,6 +1729,7 @@ nonAnnotatedParamIndex, ctor);
         Collection<NamedType> subtypes = config.getSubtypeResolver().collectAndResolveSubtypesByTypeId(
                 config, annotated, baseType);
         return b.buildTypeDeserializer(config, baseType, subtypes);
+        */
     }
     
     /**

@@ -350,10 +350,12 @@ public abstract class AnnotationIntrospector
      * @return Type resolver builder for properties of given entity, if one found;
      *    null if none
      */
+    /*
     public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config,
             Annotated ann, JavaType baseType, JsonTypeInfo.Value typeInfo) {
         return null;
     }
+    */
 
     /**
      * Method for checking if given structured property entity (field or method that
@@ -370,7 +372,7 @@ public abstract class AnnotationIntrospector
      * 
      * @return Type resolver builder for values contained in properties of given entity,
      *    if one found; null if none
-     */    
+     */
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
             Annotated ann, JavaType containerType, JsonTypeInfo.Value typeInfo) {
         return null;

@@ -293,6 +293,8 @@ public class BeanSerializerFactory
             SerializationConfig config, AnnotatedMember accessor)
         throws JsonMappingException
     {
+        return config.getTypeResolverProvider().findPropertyTypeSerializer(config, accessor, baseType);
+        /*
         AnnotationIntrospector ai = config.getAnnotationIntrospector();
         TypeResolverBuilder<?> b = ai.findPropertyTypeResolver(config,
                 accessor, baseType, ai.findPolymorphicTypeInfo(config, accessor));
@@ -307,6 +309,7 @@ public class BeanSerializerFactory
             typeSer = b.buildTypeSerializer(config, baseType, subtypes);
         }
         return typeSer;
+        */
     }
 
     /**
@@ -724,8 +727,6 @@ public class BeanSerializerFactory
     /**
      * Helper method called to ensure that we do not have "duplicate" type ids.
      * Added to resolve [databind#222]
-     *
-     * @since 2.6
      */
     protected List<BeanPropertyWriter> removeOverlappingTypeIds(SerializerProvider prov,
             BeanDescription beanDesc, BeanSerializerBuilder builder,

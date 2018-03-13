@@ -165,13 +165,6 @@ public class IntrospectorPairTest extends BaseMapTest
          */
 
         @Override
-        public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config,
-                Annotated am, JavaType baseType, JsonTypeInfo.Value typeInfo)
-        {
-            return (TypeResolverBuilder<?>) values.get("findPropertyTypeResolver");
-        }
-
-        @Override
         public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config,
                 Annotated am, JavaType baseType, JsonTypeInfo.Value typeInfo)
         {
